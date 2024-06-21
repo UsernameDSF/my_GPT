@@ -12,7 +12,7 @@ class ModelArgs:
         self.block_size = 256  # 窗口大小GPT2为1024
         self.batch_size = 16  # 暂定，之后再看显存占用
         self.n_layer = 6
-        self.vocab_size = 50304  # gpt2 tokenizer词表大小，使用的gpt2的分词器
+        self.vocab_size = 65
         self.n_head = 6
         self.n_embed = 384
         self.bias = False
@@ -25,7 +25,7 @@ class ModelArgs:
         # 学习率衰减
         self.learning_rate = 0.001
         self.warmup_steps = 100
-        self.lr_decay_steps = 5110
+        self.lr_decay_steps = 5000
         self.min_lr = 0.0001
         # 优化器参数
         self.max_epochs = 5  # 训练多少个epoch
@@ -35,16 +35,27 @@ class ModelArgs:
 
 
 args = ModelArgs()
-enc = tiktoken.get_encoding("gpt2")
-decode = lambda x: enc.decode(x)
-encode = lambda x: enc.encode(x, allowed_special={"<|endoftext|>"})
+
+file_path = os.path.join(args.dataset_path, 'shakespeare.txt')
+
+with open(file_path, 'r', encoding='utf-8') as f:
+    texts = f.read()
+
+chars = sorted(list(set(texts)))
+vocab_size = len(chars)
+args.vocab_size = vocab_size
+
+print(vocab_size)
+
+stoi = { ch:i for i,ch in enumerate(chars) }
+itos = { i:ch for i,ch in enumerate(chars) }
+encode = lambda s: [stoi[c] for c in s] # encoder: take a string, output a list of integers
+decode = lambda l: ''.join([itos[i] for i in l]) # decoder: take a list of integers, output a string
 
 
-# en = encode('print("<|endoftext|>")')
-# print(en)
-# print(decode(en))
-
-
+'''
+将训练文本划分成不重复的文本段来训练
+'''
 # class MyDataset(Dataset):
 #     def __init__(self, method):
 #         super().__init__()
@@ -76,7 +87,9 @@ encode = lambda x: enc.encode(x, allowed_special={"<|endoftext|>"})
 #         y = torch.LongTensor(self.data[start_idx + 1: end_idx + 1])
 #         return x, y
 
-
+'''
+从训练文本中随机抽取文本段来训练
+'''
 class MyDataset(Dataset):
     def __init__(self, method):
         super().__init__()
@@ -95,6 +108,7 @@ class MyDataset(Dataset):
                 text = [int(item) for item in text.split('\n')]
             self.data = text
 
+    # 指定训练集，验证集大小
     def __len__(self):
         if self.method == 'train':
             return 16000

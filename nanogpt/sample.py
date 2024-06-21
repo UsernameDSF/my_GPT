@@ -20,7 +20,7 @@ max_new_tokens = 30
 model.eval()
 model.to(args.device)
 
-start = "Sherlock Homes"  # 这是最开始的输入
+start = "We are accounted"  # 这是最开始的输入
 start_ids = encode(start)
 x = torch.tensor(start_ids,dtype=torch.long, device=args.device).unsqueeze(0)
 idx = model.generate(x, max_new_tokens=max_new_tokens, temperature=tempreture, top_k=top_k)

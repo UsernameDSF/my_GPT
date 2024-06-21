@@ -25,15 +25,13 @@ elif args.init_from == 'resume':
 
 optim = torch.optim.AdamW(model.parameters(), lr=args.learning_rate)
 # sched = torch.optim.lr_scheduler.StepLR(optim, step_size=2, gamma=0.5)
-val_loader = DataLoader(MyDataset('val'), batch_size=args.batch_size, shuffle=True, drop_last=True)
 train_loader = DataLoader(MyDataset('train'), batch_size=args.batch_size, shuffle=True, drop_last=True)
-
-
+val_loader = DataLoader(MyDataset('val'), batch_size=args.batch_size, shuffle=True, drop_last=True)
 
 print('开始训练')
 total_steps = len(train_loader) * args.max_epochs
 step = 0  # 初始化步数计数器
-with tqdm(total=total_steps, desc=f"Epoch {step // len(train_loader) + 1}", unit="step") as pbar:
+with tqdm(total=total_steps, desc=f"Training ", unit="step") as pbar:
     while step < total_steps:
         for x, y in train_loader:
             # 更新学习率
@@ -53,8 +51,8 @@ with tqdm(total=total_steps, desc=f"Epoch {step // len(train_loader) + 1}", unit
                 val_losses = 0
                 for x, y in val_loader:
                     x, y = x.to(args.device), y.to(args.device)
-                    _, loss = model(x, y)
-                    val_losses += loss.item()
+                    _, losses = model(x, y)
+                    val_losses += losses.item()
                 val_losses = val_losses / len(val_loader)
                 lr = optim.param_groups[0]['lr']
                 print(f"\n当前进行了{step}步,当前学习率：{lr}, train_loss:{loss.item()},val_loss:{val_losses}")
@@ -71,11 +69,6 @@ with tqdm(total=total_steps, desc=f"Epoch {step // len(train_loader) + 1}", unit
                     }
                     torch.save(checkpoint, os.path.join(args.checkpoint_save_dir, 'best_checkpoint.pt'))
                     print(f"checkpoint保存在{args.checkpoint_save_dir}/best_checkpoint.pt")
-
-            # # 如果达到总步数，结束训练
-            # if step >= total_steps:
-            #     print(f"已达到总步数 {total_steps}，训练结束。")
-            #     break
 
         # 一轮迭代结束，检查是否需要继续训练
         if step < total_steps:

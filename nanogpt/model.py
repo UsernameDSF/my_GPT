@@ -143,7 +143,7 @@ class GPT(nn.Module):
     def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None):
         for _ in range(max_new_tokens):
             # 如果大于传入的最大大小则截取后面一段
-            idx = idx if idx.shape[-1] < self.args.block_size else idx[:, -self.args.block_size:]
+            idx = idx if idx.shape[-1] < self.args.block_size else idx[:, :self.args.block_size]
             logits, _ = self(idx)
             logits = logits[:, -1, :] / temperature  # (B,T,C)取最后一个即新生成的,tempreture更高，生成的随机性更高
 
