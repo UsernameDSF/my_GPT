@@ -46,7 +46,8 @@ for epoch in range(args.max_epochs):
                 _, loss = model(x, y)
                 val_losses += loss.item()
             val_losses = val_losses / len(val_loader)
-            print(f"\n当前epoch:{epoch+1},进行了{step}步,train_loss:{loss.item()},val_loss:{val_losses}")
+            lr = optim.param_groups[0]['lr']
+            print(f"\n当前epoch:{epoch+1},进行了{step}步,当前学习率：{lr}, train_loss:{loss.item()},val_loss:{val_losses}")
 
             model.train()
             # 保存checkpoint
