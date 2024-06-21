@@ -23,9 +23,9 @@ class ModelArgs:
         self.flash_attn = False
         # 学习率衰减
         self.learning_rate = 6e-4
-        # self.warmup_iters = 2000
-        # self.lr_decay_iters = 8000
-        # self.min_lr = 6e-5
+        self.warmup_steps = 200
+        self.lr_decay_steps = 800
+        self.min_lr = 6e-5
         # 优化器参数
         self.max_epochs = 20  # 训练多少个epoch
         # self.weight_decay = 1e-1

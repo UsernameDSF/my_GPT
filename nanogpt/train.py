@@ -36,6 +36,8 @@ step = 0  # 初始化步数计数器
 with tqdm(total=total_steps, desc=f"Epoch {step // len(train_loader) + 1}", unit="step") as pbar:
     while step < total_steps:
         for x, y in train_loader:
+            # 更新学习率
+            optim.param_groups[0]['lr'] = model.get_lr(step)
             x, y = x.to(args.device), y.to(args.device)
             logits, loss = model(x, y)
             optim.zero_grad()

@@ -155,3 +155,19 @@ class GPT(nn.Module):
             idx = torch.cat([idx, idx_next], dim=1)
 
         return idx
+
+    # 更改学习率，先做warmup,然后再用cos衰减
+    def get_lr(self, now_step):
+        # 当前步数小于warmup步数时，设置的最高学习率learning_rate乘以当前步数与warmup步数之比，
+        # 在达到warmup步数签，学习率从0线性增长到learning_rate
+        if now_step < self.args.warmup_steps:
+            return self.args.learning_rate * (now_step / self.args.warmup_steps)
+
+        # 当前步数大于lr_decay_steps步数时，学习率要保持一个最低值
+        elif now_step > self.args.lr_decay_steps:
+            return self.args.min_lr
+        else:
+            # 当前学习率在warmup步数和lr_decay_steps步数之间时，学习率做cos衰减
+            rate = (now_step - self.args.warmup_steps)/(self.args.lr_decay_steps - self.args.warmup_steps)
+            lr = self.args.min_lr + 0.5 * (1 + math.cos(math.pi * rate)) * (self.args.learning_rate - self.args.min_lr)
+            return lr
