@@ -8,18 +8,18 @@ import os
 class ModelArgs:
     def __init__(self):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self.block_size = 128  # 窗口大小GPT2为1024
-        self.batch_size = 32  # 暂定，之后再看显存占用
-        self.n_layer = 3
+        self.block_size = 256  # 窗口大小GPT2为1024
+        self.batch_size = 16  # 暂定，之后再看显存占用
+        self.n_layer = 6
         self.vocab_size = 50304  # gpt2 tokenizer词表大小，使用的gpt2的分词器
         self.n_head = 6
-        self.n_embed = 768
+        self.n_embed = 384
         self.bias = False
         self.dropout = 0.0
         self.dataset_path = r'D:\PythonProject\my_GPT\data\english\shakespeare'
         self.init_from = 'scratch'  # 'scratch' or 'resume' # 从头训练还是继续
         self.checkpoint_save_dir = r'D:\PythonProject\my_GPT\checkpoint\nanogpt'
-        self.eval_step = 50  # 每n步eval和保存checkpoint一次
+        self.eval_step = 10  # 每n步eval和保存checkpoint一次
         self.flash_attn = False
         # 学习率衰减
         self.learning_rate = 6e-4
@@ -27,7 +27,7 @@ class ModelArgs:
         # self.lr_decay_iters = 8000
         # self.min_lr = 6e-5
         # 优化器参数
-        self.max_epochs = 10  # 训练多少个epoch
+        self.max_epochs = 20  # 训练多少个epoch
         # self.weight_decay = 1e-1
         # self.betas = (0.9,0.95)
         # self.grad_clip = 1.0 # 梯度裁剪
