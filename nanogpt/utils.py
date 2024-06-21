@@ -25,7 +25,7 @@ class ModelArgs:
         # 学习率衰减
         self.learning_rate = 0.001
         self.warmup_steps = 100
-        self.lr_decay_steps = 5110
+        self.lr_decay_steps = 5000
         self.min_lr = 0.0001
         # 优化器参数
         self.max_epochs = 5  # 训练多少个epoch
