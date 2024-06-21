@@ -49,10 +49,10 @@ class MLP(nn.Module):
         self.up_proj = nn.Linear(args.n_embed, 4 * args.n_embed, bias=args.bias)
         self.down_proj = nn.Linear(4 * args.n_embed, args.n_embed, bias=args.bias)
         self.dropout = nn.Dropout(args.dropout)
-        self.relu = nn.ReLU()
+        self.act_func = nn.GELU()
 
     def forward(self, x):
-        return self.dropout(self.down_proj(self.relu(self.up_proj(x))))
+        return self.dropout(self.down_proj(self.act_func(self.up_proj(x))))
 
 
 class RMS_Norm(nn.Module):
@@ -74,11 +74,12 @@ class Block(nn.Module):
         super().__init__()
         self.attn = Attention(args)
         self.mlp = MLP(args)
-        self.norm = RMS_Norm(args.n_embed)
+        self.norm_1 = RMS_Norm(args.n_embed)
+        self.norm_2 = RMS_Norm(args.n_embed)
 
     def forward(self, x):
-        x = x + self.attn(self.norm(x))
-        return x + self.mlp(self.norm(x))
+        x = x + self.attn(self.norm_1(x))
+        return x + self.mlp(self.norm_2(x))
 
 
 class GPT(nn.Module):
@@ -115,6 +116,7 @@ class GPT(nn.Module):
     def forward(self, idx, target=None):
         device = idx.device
         B, S = idx.shape
+        assert S <= self.args.block_size, "超出了上下文长度"
         pos = torch.arange(0, S, dtype=torch.long, device=device)
 
         # embedding
@@ -137,10 +139,11 @@ class GPT(nn.Module):
 
         return logits, loss
 
+    @torch.no_grad()
     def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None):
         for _ in range(max_new_tokens):
             # 如果大于传入的最大大小则截取后面一段
-            idx = idx if idx.shape[-1] < self.args.block_size else idx[:, :self.args.block_size]
+            idx = idx if idx.shape[-1] < self.args.block_size else idx[:, -self.args.block_size:]
             logits, _ = self(idx)
             logits = logits[:, -1, :] / temperature  # (B,T,C)取最后一个即新生成的,tempreture更高，生成的随机性更高
 
@@ -152,7 +155,7 @@ class GPT(nn.Module):
 
             probs = F.softmax(logits, dim=-1)
             idx_next = torch.multinomial(probs, num_samples=1)
-            idx = torch.cat([idx, idx_next], dim=1)
+            idx = torch.cat((idx, idx_next), dim=1)
 
         return idx
 

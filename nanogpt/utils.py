@@ -15,17 +15,17 @@ class ModelArgs:
         self.n_head = 6
         self.n_embed = 384
         self.bias = False
-        self.dropout = 0.0
+        self.dropout = 0.2
         self.dataset_path = r'D:\PythonProject\my_GPT\data\english\shakespeare'
         self.init_from = 'scratch'  # 'scratch' or 'resume' # 从头训练还是继续
         self.checkpoint_save_dir = r'D:\PythonProject\my_GPT\checkpoint\nanogpt'
         self.eval_step = 10  # 每n步eval和保存checkpoint一次
-        self.flash_attn = False
+        self.flash_attn = True
         # 学习率衰减
-        self.learning_rate = 6e-4
-        self.warmup_steps = 200
-        self.lr_decay_steps = 800
-        self.min_lr = 6e-5
+        self.learning_rate = 0.001
+        self.warmup_steps = 100
+        self.lr_decay_steps = 5110
+        self.min_lr = 0.0001
         # 优化器参数
         self.max_epochs = 20  # 训练多少个epoch
         # self.weight_decay = 1e-1
