@@ -4,12 +4,8 @@ import torch
 import os
 
 ckpt_path = os.path.join(args.checkpoint_save_dir, 'best_checkpoint.pt')  # 读取checkpoint路径
-checkpoint = torch.load(ckpt_path, map_location=args.device)
-checkpoint_model_args = checkpoint['model_args']  # 从checkpoint里面读取模型参数
-
-model = GPT(checkpoint_model_args).to(checkpoint_model_args.device)
-state_dict = checkpoint['model']  # 读取模型权重
-model.load_state_dict(state_dict)
+model = GPT(args).to(args.device)
+model.load_state_dict(torch.load(ckpt_path, map_location=args.device))
 
 # generate参数
 top_k = 2
