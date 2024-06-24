@@ -12,12 +12,12 @@ class ModelArgs:
         self.block_size = 256  # 窗口大小GPT2为1024
         self.batch_size = 16  # 暂定，之后再看显存占用
         self.n_layer = 6
-        self.vocab_size = 65
+        self.vocab_size = 4517
         self.n_head = 6
         self.n_embed = 384
         self.bias = False
         self.dropout = 0.2
-        self.dataset_path = r'D:\PythonProject\my_GPT\data\english\shakespeare'
+        self.dataset_path = r'D:\PythonProject\my_GPT\data\chinese\xiyou'
         self.init_from = 'scratch'  # 'scratch' or 'resume' # 从头训练还是继续
         self.checkpoint_save_dir = r'D:\PythonProject\my_GPT\checkpoint\nanogpt'
         self.eval_step = 10  # 每n步eval和保存checkpoint一次
@@ -25,7 +25,7 @@ class ModelArgs:
         # 学习率衰减
         self.learning_rate = 0.001
         self.warmup_steps = 100
-        self.lr_decay_steps = 5000
+        self.lr_decay_steps = 5000  # 这个意思是，到lr_decay_steps之后，学习率就不再衰减了。一般与训练总步数一样，因此学习率会一直衰减。
         self.min_lr = 0.0001
         # 优化器参数
         self.max_epochs = 5  # 训练多少个epoch
@@ -36,7 +36,7 @@ class ModelArgs:
 
 args = ModelArgs()
 
-file_path = os.path.join(args.dataset_path, 'shakespeare.txt')
+file_path = os.path.join(args.dataset_path, 'Xiyou.txt')
 
 with open(file_path, 'r', encoding='utf-8') as f:
     texts = f.read()

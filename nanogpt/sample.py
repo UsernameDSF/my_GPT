@@ -12,15 +12,15 @@ state_dict = checkpoint['model']  # 读取模型权重
 model.load_state_dict(state_dict)
 
 # generate参数
-top_k = None
-tempreture = 1 # 一般都先设置1，想要更random一点就往上调
+top_k = 2
+tempreture = 1  # 一般都先设置1，想要更random一点就往上调
 # num_samples = 1 # sample几次
 max_new_tokens = 30
 
 model.eval()
 model.to(args.device)
 
-start = "We are accounted"  # 这是最开始的输入
+start = "诗曰："  # 这是最开始的输入
 start_ids = encode(start)
 x = torch.tensor(start_ids,dtype=torch.long, device=args.device).unsqueeze(0)
 idx = model.generate(x, max_new_tokens=max_new_tokens, temperature=tempreture, top_k=top_k)
