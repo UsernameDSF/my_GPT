@@ -22,27 +22,39 @@ elif args.init_from == 'resume':
     model.load_state_dict(state_dict)
 
     best_val_loss = checkpoint['best_val_loss']
+    checkpoint = None  # 释放checkpoint
 
 optim = torch.optim.AdamW(model.parameters(), lr=args.learning_rate)
 # sched = torch.optim.lr_scheduler.StepLR(optim, step_size=2, gamma=0.5)
 val_loader = DataLoader(MyDataset('val'), batch_size=args.batch_size, shuffle=True, drop_last=True)
 train_loader = DataLoader(MyDataset('train'), batch_size=args.batch_size, shuffle=True, drop_last=True)
 
+# 初始化混合精度训练
+dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else 'float16' # 检查cuda是否支持bfloat16数据类型
+ptdtype = {'float32': torch.float32, 'bfloat16': torch.bfloat16, 'float16': torch.float16}[dtype]
+ctx = torch.amp.autocast(device_type=args.device, dtype=ptdtype)  # torch.amp.autocast混合精度
+scaler = torch.cuda.amp.GradScaler(enabled=(dtype == 'float16'))  # 优化：混合精度训练，大部分使用float16，少部分用float32
 
 
 print('开始训练')
 total_steps = len(train_loader) * args.max_epochs
 step = 0  # 初始化步数计数器
-with tqdm(total=total_steps, desc=f"Epoch {step // len(train_loader) + 1}", unit="step") as pbar:
+with tqdm(total=total_steps, desc=f"Training ", unit="step") as pbar:
     while step < total_steps:
         for x, y in train_loader:
             # 更新学习率
             optim.param_groups[0]['lr'] = model.get_lr(step)
-            x, y = x.to(args.device), y.to(args.device)
-            logits, loss = model(x, y)
-            optim.zero_grad()
-            loss.backward()
-            optim.step()
+            with ctx:
+                x, y = x.to(args.device), y.to(args.device)
+                logits, loss = model(x, y)
+                scaler.scale(loss).backward()
+            # 梯度裁剪
+            if args.grad_clip != 0.0:
+                scaler.unscale_(optim)  # 使用标准，在进行梯度裁剪前，要使用这段代码，unscale梯度回fp32
+                torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)  # 固定阈值剪裁
+
+            scaler.step(optim)
+            optim.zero_grad(set_to_none=True)
 
             step += 1  # 每完成一个批次，步数增加
             pbar.update(1)  # 更新进度条

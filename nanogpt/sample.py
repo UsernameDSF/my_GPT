@@ -12,10 +12,10 @@ state_dict = checkpoint['model']  # 读取模型权重
 model.load_state_dict(state_dict)
 
 # generate参数
-top_k = None
+top_k = 2
 tempreture = 1 # 一般都先设置1，想要更random一点就往上调
 # num_samples = 1 # sample几次
-max_new_tokens = 30
+max_new_tokens = 200
 
 model.eval()
 model.to(args.device)
