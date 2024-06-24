@@ -3,7 +3,7 @@ import tiktoken
 from torch.utils.data import DataLoader, Dataset
 import os
 import random
-
+import numpy as np
 
 # 模型参数设置位置！
 class ModelArgs:
@@ -32,7 +32,7 @@ class ModelArgs:
         # self.weight_decay = 1e-1
         # self.betas = (0.9,0.95)
         self.grad_clip = 1.0  # 梯度裁剪,固定阈值进行裁剪。设置为0.0就是关闭
-        self.compile = True
+        self.compile = False
 
 
 
@@ -97,18 +97,9 @@ class MyDataset(Dataset):
         super().__init__()
         self.method = method
         if method == 'train':
-            train_data_path = os.path.join(args.dataset_path, 'train.txt')
-            with open(train_data_path, 'r', encoding='utf-8') as f:
-                text = f.read()
-                text = [int(item) for item in text.split('\n')]
-            self.data = text
-
-        elif method == 'val':
-            val_data_path = os.path.join(args.dataset_path, 'val.txt')
-            with open(val_data_path, 'r', encoding='utf-8') as f:
-                text = f.read()
-                text = [int(item) for item in text.split('\n')]
-            self.data = text
+            self.data = np.memmap(os.path.join(args.dataset_path, 'train.bin'), dtype=np.uint16, mode='r')
+        else:
+            self.data = np.memmap(os.path.join(args.dataset_path, 'val.bin'), dtype=np.uint16, mode='r')
 
     # 指定训练集，验证集大小
     def __len__(self):
@@ -119,13 +110,15 @@ class MyDataset(Dataset):
 
     def __getitem__(self, idx):
         i = random.randint(0, len(self.data) - args.block_size - 1)
-        x = torch.LongTensor(self.data[i:i + args.block_size])
-        y = torch.LongTensor(self.data[i + 1:i + args.block_size + 1])
+        input_x = np.copy(self.data[i:i + args.block_size])
+        input_y = np.copy(self.data[i + 1:i + args.block_size + 1])
+        x = torch.LongTensor(input_x)
+        y = torch.LongTensor(input_y)
         return x, y
 
 
 # val_loader = DataLoader(MyDataset('val'), batch_size=args.batch_size, shuffle=True, drop_last=True)
 # train_loader = DataLoader(MyDataset('train'), batch_size=args.batch_size, shuffle=True, drop_last=True)
-
+# print(next(iter(train_loader)))
 # print(os.path.join(args.dataset_path, 'train.txt'))
 # print(os.path.exists(os.path.join(args.dataset_path, 'train.txt')))
