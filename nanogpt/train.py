@@ -24,6 +24,10 @@ elif args.init_from == 'resume':
     best_val_loss = checkpoint['best_val_loss']
     checkpoint = None  # 释放checkpoint
 
+if args.compile:
+    model = torch.compile(model)
+    print('使用了torch.compile！')
+
 optim = torch.optim.AdamW(model.parameters(), lr=args.learning_rate)
 # sched = torch.optim.lr_scheduler.StepLR(optim, step_size=2, gamma=0.5)
 val_loader = DataLoader(MyDataset('val'), batch_size=args.batch_size, shuffle=True, drop_last=True)
@@ -34,6 +38,7 @@ dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported
 ptdtype = {'float32': torch.float32, 'bfloat16': torch.bfloat16, 'float16': torch.float16}[dtype]
 ctx = torch.amp.autocast(device_type=args.device, dtype=ptdtype)  # torch.amp.autocast混合精度
 scaler = torch.cuda.amp.GradScaler(enabled=(dtype == 'float16'))  # 优化：混合精度训练，大部分使用float16，少部分用float32
+
 
 
 print('开始训练')

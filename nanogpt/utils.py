@@ -32,6 +32,7 @@ class ModelArgs:
         # self.weight_decay = 1e-1
         # self.betas = (0.9,0.95)
         self.grad_clip = 1.0  # 梯度裁剪,固定阈值进行裁剪。设置为0.0就是关闭
+        self.compile = True
 
 
 
