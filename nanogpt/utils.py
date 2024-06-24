@@ -45,7 +45,6 @@ chars = sorted(list(set(texts)))
 vocab_size = len(chars)
 args.vocab_size = vocab_size
 
-print(vocab_size)
 
 stoi = { ch:i for i,ch in enumerate(chars) }
 itos = { i:ch for i,ch in enumerate(chars) }
