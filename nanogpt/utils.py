@@ -19,7 +19,7 @@ class ModelArgs:
         self.dropout = 0.2
         self.dataset_path = r'D:\PythonProject\my_GPT\data\english\shakespeare'
         self.init_from = 'scratch'  # 'scratch' or 'resume' # 从头训练还是继续
-        self.checkpoint_save_dir = r'D:\PythonProject\my_GPT\checkpoint\nanogpt'
+        self.checkpoint_save_dir = r'D:\PythonProject\my_GPT\checkpoint\shakespeare'
         self.eval_step = 10  # 每n步eval和保存checkpoint一次
         self.flash_attn = False
         # 学习率衰减
