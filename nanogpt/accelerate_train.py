@@ -7,7 +7,7 @@ import torch
 from pathlib import Path
 from nanogpt.model import GPT
 from nanogpt.utils import MyDataset, args
-
+from tqdm import tqdm
 
 def accelerate_prepare():
     trainloader = DataLoader(MyDataset('train'), batch_size=args.batch_size, shuffle=True, drop_last=True)
@@ -95,7 +95,7 @@ def train(model,
                 if best_val_loss > val_losses:
                     accelerator.wait_for_everyone()
                     # 保存模型检查点
-                    accelerator.save_state(accelerator.project_dir + f"/step_{global_step}")
+                    accelerator.save_state(accelerator.project_dir + f"/step_{global_step}", safe_serialization=False)
                     # 保存模型
                     accelerator.save(
                         accelerator.unwrap_model(model).state_dict(),
