@@ -105,14 +105,15 @@ def train(model,
                     accelerator.print(f'最佳val_loss从{best_val_loss}降低到{val_losses}, 保存该模型！')
                     best_val_loss = val_losses
 
-                    # 只保存n个checkpoint
-                    # 获取当前目录下的所有step_开头的目录（假设这些是之前的检查点目录）
-                    checkpoint_dirs = sorted(Path(accelerator.project_dir).glob("step_*"), key=os.path.getmtime)
-                    if len(checkpoint_dirs) >= 5:
-                        # 如果超过最大数量，删除最早的检查点目录
-                        oldest_checkpoint = checkpoint_dirs[0]
-                        accelerator.print(f"删除最旧检查点: {oldest_checkpoint}")
-                        shutil.rmtree(oldest_checkpoint)
+                    if accelerator.is_main_process:
+                        # 只保存n个checkpoint
+                        # 获取当前目录下的所有step_开头的目录（假设这些是之前的检查点目录）
+                        checkpoint_dirs = sorted(Path(accelerator.project_dir).glob("step_*"), key=os.path.getmtime)
+                        if len(checkpoint_dirs) >= 5:
+                            # 如果超过最大数量，删除最早的检查点目录
+                            oldest_checkpoint = checkpoint_dirs[0]
+                            accelerator.print(f"删除最旧检查点: {oldest_checkpoint}")
+                            shutil.rmtree(oldest_checkpoint)
             global_step += 1
 
             # 学习更新
