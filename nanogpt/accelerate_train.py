@@ -20,6 +20,7 @@ def accelerate_prepare():
     validloader = DataLoader(MyDataset('val'), batch_size=args.batch_size, shuffle=True, drop_last=True)
     model = GPT(args)
     if args.init_from:
+        print('在已有模型的基础上开始重新训练!')
         model.load_state_dict(torch.load(args.init_from, map_location=args.device))
 
     if args.compile:
@@ -27,8 +28,8 @@ def accelerate_prepare():
         print('使用了torch.compile!')
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate)
 
-    max_steps = args.max_epochs * (math.ceil(len(trainloader) / 2))
-
+    max_steps = math.ceil(args.max_epochs * len(trainloader) / 24)  # 24为梯度累积的步数。学习率调度器包装accelerate之后，梯度不更新时，学习率也不会更新
+    print(max_steps)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max_steps, eta_min=args.min_lr)
 
     return model, optimizer, trainloader, validloader, scheduler
@@ -155,7 +156,9 @@ model, optimizer, trainloader, validloader, scheduler = accelerator.prepare(mode
                                                                             optimizer,
                                                                             trainloader,
                                                                             validloader,
-                                                                            scheduler)
+                                                                            scheduler
+                                                                            )
+
 start_time = time.time()
 train(model,
       optimizer,
